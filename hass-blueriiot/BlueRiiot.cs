@@ -56,10 +56,9 @@ namespace HMX.HASSBlueriiot
                     for (int iIndex = 0; iIndex < bluePools.Data.Count; iIndex++)
                         Logging.WriteLog("BlueRiiot.Run() [0x{0}] Pool \"{1}\" ({2}) found.", lRequestId.ToString("X8"), bluePools.Data[iIndex].Name, bluePools.Data[iIndex].SwimmingPoolId);
 
-                    return;
                 }
 
-                Logging.WriteLog("BlueRiiot.Run() [0x{0}] Pool \"{1}\" ({2}) found.", lRequestId.ToString("X8"), bluePools.Data[0].Name, bluePools.Data[0].SwimmingPoolId);
+                Logging.WriteLog("BlueRiiot.Run() [0x{0}] Pool \"{1}\" ({2}) found and selected.", lRequestId.ToString("X8"), bluePools.Data[0].Name, bluePools.Data[0].SwimmingPoolId);
 
                 strPoolId = bluePools.Data[0].SwimmingPool.SwimmingPoolId;
             }

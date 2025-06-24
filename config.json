@@ -6,7 +6,10 @@
   "url": "https://github.com/SuperQubit/hass-blueriiot",
   "startup": "application",
   "boot": "auto",
-  "image": "superqubit/hass-blueriiot-{arch}",
+  "build": {
+      "context": ".",
+      "dockerfile": "Dockerfile"
+  },  
   "arch": [
     "amd64",
     "aarch64",

@@ -3,7 +3,7 @@ Blueriiot Blue Connect Add-On for Home Assistant
 
 This add-on will periodically poll the Blueriiot API to retrieve sensor data from your Blue Connect unit.
 
-This add-on is in development/testing at present. If multiple pool is present the first one is selected.
+This add-on is in development/testing at present. If multiple pools are present you can choose which one to poll using the `PoolIndex` option.
 
 Home Assistant AddOn Repository: https://github.com/SuperQubit/HASSAddons.
 
@@ -21,3 +21,6 @@ Set this field to core-mosquitto to use the HA Mosquitto MQTT add-on. Otherwise,
 
 ### MQTTTLS: true/false
 Setting this option to true will force the MQTT client to attempt a TLS connection to the MQTT broker.
+
+### PoolIndex: int
+Index of the swimming pool to poll when your account contains more than one.

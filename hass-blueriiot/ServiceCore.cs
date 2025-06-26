@@ -22,8 +22,9 @@ namespace HMX.HASSBlueriiot
 			IHost webHost;
 			IConfigurationRoot configuration;
 			string strMQTTUser, strMQTTPassword, strMQTTBroker;
-			string strUser, strPassword;
-			bool bMQTTTLS;
+                        string strUser, strPassword;
+                        int iPoolIndex;
+                        bool bMQTTTLS;
 
 			Logging.WriteLog("ServiceCore.Start() Built: {0}", Properties.Resources.BuildDate);
 
@@ -48,10 +49,11 @@ namespace HMX.HASSBlueriiot
 			Configuration.GetPrivateOptionalConfiguration(configuration, "MQTTPassword", out strMQTTPassword);
 			if (!Configuration.GetConfiguration(configuration, "MQTTBroker", out strMQTTBroker))
 				return;
-			Configuration.GetOptionalConfiguration(configuration, "MQTTTLS", out bMQTTTLS);
+                        Configuration.GetOptionalConfiguration(configuration, "MQTTTLS", out bMQTTTLS);
+                        Configuration.GetOptionalConfiguration(configuration, "PoolIndex", out iPoolIndex);
 
-			MQTT.StartMQTT(strMQTTBroker, bMQTTTLS, _strServiceName, strMQTTUser, strMQTTPassword);
-			BlueRiiot.Start(strUser, strPassword);
+                        MQTT.StartMQTT(strMQTTBroker, bMQTTTLS, _strServiceName, strMQTTUser, strMQTTPassword);
+                        BlueRiiot.Start(strUser, strPassword, iPoolIndex);
 
 			MQTTRegister();
 

@@ -1,7 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [v2023.11.1] - 2023-11-14
+## [v2025.06.1] - 2025-06-27
 
 ### Added
 - Support for selecting the swimming pool via `PoolIndex` configuration option.

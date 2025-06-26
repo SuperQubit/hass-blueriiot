@@ -123,7 +123,12 @@ namespace HMX.HASSBlueriiot
             return GetConfiguration(configuration, strVariable, out iConfiguration, true);
         }
 
-        private static bool GetConfiguration(IConfigurationRoot configuration, string strVariable, out int iConfiguration, bool bPrivate)
+        public static bool GetOptionalConfiguration(IConfigurationRoot configuration, string strVariable, out int iConfiguration)
+        {
+            return GetConfiguration(configuration, strVariable, out iConfiguration, false, true);
+        }
+
+        private static bool GetConfiguration(IConfigurationRoot configuration, string strVariable, out int iConfiguration, bool bPrivate, bool bOptional = false)
         {
             string strTemp;
 
@@ -147,6 +152,11 @@ namespace HMX.HASSBlueriiot
                 else
                     Logging.WriteLog("{0}: {1}", strVariable, iConfiguration);
 
+                return true;
+            }
+            else if (bOptional)
+            {
+                iConfiguration = 0;
                 return true;
             }
             else

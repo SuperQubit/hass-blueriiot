@@ -14,10 +14,12 @@ namespace HMX.HASSBlueriiot
     {
         private static BlueClient? _blueClient = null;
         private static Timer? _timerPoll;
+        private static int _poolIndex = 0;
 
-        public static void Start(string strUser, string strPassword)
+        public static void Start(string strUser, string strPassword, int poolIndex)
         {
             Logging.WriteLog("BlueRiiot.Start()");
+            _poolIndex = poolIndex;
 
             _blueClient = new BlueClientBuilder()
                 .UseUsernamePassword(strUser, strPassword)
@@ -58,9 +60,15 @@ namespace HMX.HASSBlueriiot
 
                 }
 
-                Logging.WriteLog("BlueRiiot.Run() [0x{0}] Pool \"{1}\" ({2}) found and selected.", lRequestId.ToString("X8"), bluePools.Data[0].Name, bluePools.Data[0].SwimmingPoolId);
+                if (_poolIndex >= bluePools.Data.Count)
+                {
+                    Logging.WriteLog("BlueRiiot.Run() [0x{0}] PoolIndex {1} out of range, using 0.", lRequestId.ToString("X8"), _poolIndex);
+                    _poolIndex = 0;
+                }
 
-                strPoolId = bluePools.Data[0].SwimmingPool.SwimmingPoolId;
+                Logging.WriteLog("BlueRiiot.Run() [0x{0}] Pool \"{1}\" ({2}) found and selected.", lRequestId.ToString("X8"), bluePools.Data[_poolIndex].Name, bluePools.Data[_poolIndex].SwimmingPoolId);
+
+                strPoolId = bluePools.Data[_poolIndex].SwimmingPool.SwimmingPoolId;
             }
             catch (Exception eException)
             {

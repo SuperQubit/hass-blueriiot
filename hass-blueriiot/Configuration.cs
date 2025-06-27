@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using System.Text.Json;
 
 namespace HMX.HASSBlueriiot
 {
@@ -167,6 +169,37 @@ namespace HMX.HASSBlueriiot
 
                 return false;
             }
+        }
+
+        // Integer array
+        public static bool GetOptionalConfiguration(IConfigurationRoot configuration, string strVariable, out int[] iConfigurations)
+        {
+            Logging.WriteLog("Configuration.GetConfiguration() Read {0}", strVariable);
+
+            var section = configuration.GetSection(strVariable);
+            List<int> values = new List<int>();
+
+            if (section.Exists() && section.GetChildren().Any())
+            {
+                foreach (var child in section.GetChildren())
+                {
+                    if (int.TryParse(child.Value, out int val))
+                        values.Add(val);
+                }
+            }
+            else if (!string.IsNullOrEmpty(configuration[strVariable]))
+            {
+                var parts = configuration[strVariable].Split(',');
+                foreach (var part in parts)
+                {
+                    if (int.TryParse(part.Trim(), out int val))
+                        values.Add(val);
+                }
+            }
+
+            iConfigurations = values.ToArray();
+            Logging.WriteLog("{0}: {1}", strVariable, string.Join(",", iConfigurations));
+            return true;
         }
     }
 }

@@ -22,5 +22,15 @@ Set this field to core-mosquitto to use the HA Mosquitto MQTT add-on. Otherwise,
 ### MQTTTLS: true/false
 Setting this option to true will force the MQTT client to attempt a TLS connection to the MQTT broker.
 
-### PoolIndex: int
-Index of the swimming pool to poll when your account contains more than one.
+### PoolIndex: string
+Comma separated list of pool indexes to poll. Example `"0,1"` will publish
+measurements for the first two pools on your account.
+
+### DeviceId: string
+Unique identifier prefix for the MQTT devices. If not set, the first pool index
+is appended to `hass-blueriiot` when a single pool is monitored.
+Example:
+
+```
+"DeviceId": "my-pool"
+```

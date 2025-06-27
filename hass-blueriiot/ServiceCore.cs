@@ -13,17 +13,19 @@ namespace HMX.HASSBlueriiot
 {
     public class ServiceCore
     {
-		private static string _strServiceName = "hass-blueriiot";
-		private static string _strServiceDescription = "Blueriiot Pool Sensor";
-		private static string _strConfigFile = "/data/options.json";
+                private static string _strServiceName = "hass-blueriiot";
+                private static string _strServiceDescription = "Blueriiot Pool Sensor";
+                private static string _strConfigFile = "/data/options.json";
+                private static string _strDeviceId = string.Empty;
+                private static int[] _poolIndices = new int[0];
 
 		public static void Start()
         {
 			IHost webHost;
 			IConfigurationRoot configuration;
-			string strMQTTUser, strMQTTPassword, strMQTTBroker;
-                        string strUser, strPassword;
-                        int iPoolIndex;
+                        string strMQTTUser, strMQTTPassword, strMQTTBroker;
+                        string strUser, strPassword, strDeviceId;
+                        int[] iPoolIndices;
                         bool bMQTTTLS;
 
 			Logging.WriteLog("ServiceCore.Start() Built: {0}", Properties.Resources.BuildDate);
@@ -50,10 +52,20 @@ namespace HMX.HASSBlueriiot
 			if (!Configuration.GetConfiguration(configuration, "MQTTBroker", out strMQTTBroker))
 				return;
                         Configuration.GetOptionalConfiguration(configuration, "MQTTTLS", out bMQTTTLS);
-                        Configuration.GetOptionalConfiguration(configuration, "PoolIndex", out iPoolIndex);
+                        Configuration.GetOptionalConfiguration(configuration, "PoolIndex", out iPoolIndices);
+                        Configuration.GetOptionalConfiguration(configuration, "DeviceId", out strDeviceId);
+
+                        if (iPoolIndices.Length == 0)
+                                iPoolIndices = new int[] { 0 };
+
+                        if (string.IsNullOrEmpty(strDeviceId))
+                                strDeviceId = (iPoolIndices.Length == 1 && iPoolIndices[0] != 0 ? string.Format("{0}-{1}", _strServiceName, iPoolIndices[0]) : _strServiceName);
+
+                        _strDeviceId = strDeviceId;
 
                         MQTT.StartMQTT(strMQTTBroker, bMQTTTLS, _strServiceName, strMQTTUser, strMQTTPassword);
-                        BlueRiiot.Start(strUser, strPassword, iPoolIndex);
+                        _poolIndices = iPoolIndices;
+                        BlueRiiot.Start(strUser, strPassword, iPoolIndices);
 
 			MQTTRegister();
 
@@ -75,26 +87,40 @@ namespace HMX.HASSBlueriiot
 			Logging.WriteLog("ServiceCore.Start() Started");
 		}
 
-		public static void MQTTRegister()
-		{
-			Logging.WriteLog("ServiceCore.MQTTRegister()");
+                public static void MQTTRegister()
+                {
+                        Logging.WriteLog("ServiceCore.MQTTRegister()");
 
-			MQTT.SendMessage("homeassistant/sensor/blueriiot/sensor_pool_temperature/config",
-				"{{\"name\":\"Pool Temperature\",\"unique_id\":\"{1}-0\",\"device\":{{\"identifiers\":[\"{1}\"],\"name\":\"{2}\",\"model\":\"Container\",\"manufacturer\":\"Blueriiot\"}},\"state_topic\":\"sensor_pool/temperature\",\"device_class\":\"temperature\",\"unit_of_measurement\":\"°C\",\"availability_topic\":\"{0}/status\"}}", _strServiceName.ToLower(), _strServiceName, _strServiceDescription);
+                        foreach (int index in _poolIndices)
+                        {
+                                string baseId = string.Format("blueriiot-{0}-{1}", _strDeviceId, index);
 
-			MQTT.SendMessage("homeassistant/sensor/blueriiot/sensor_pool_ph/config",
-				"{{\"name\":\"Pool pH\",\"unique_id\":\"{1}-1\",\"device\":{{\"identifiers\":[\"{1}\"],\"name\":\"{2}\",\"model\":\"Container\",\"manufacturer\":\"Blueriiot\"}},\"state_topic\":\"sensor_pool/ph\",\"suggested_display_precision\":\"1\",\"unit_of_measurement\":\"pH\",\"availability_topic\":\"{0}/status\"}}", _strServiceName.ToLower(), _strServiceName, _strServiceDescription);
+                                MQTT.SendMessage($"homeassistant/sensor/blueriiot/sensor_pool_{index}_temperature/config",
+                                        "{{\"name\":\"Pool Temperature\",\"unique_id\":\"{1}-0\",\"device\":{{\"identifiers\":[\"{1}\"],\"name\":\"{2}\",\"model\":\"Container\",\"manufacturer\":\"Blueriiot\"}},\"state_topic\":\"sensor_pool/{0}/temperature\",\"device_class\":\"temperature\",\"unit_of_measurement\":\"°C\",\"availability_topic\":\"{3}/status\"}}",
+                                        index, baseId, _strServiceDescription, _strServiceName.ToLower());
 
-			MQTT.SendMessage("homeassistant/sensor/blueriiot/sensor_pool_orp/config",
-				 "{{\"name\":\"Pool Orp\",\"unique_id\":\"{1}-2\",\"device\":{{\"identifiers\":[\"{1}\"],\"name\":\"{2}\",\"model\":\"Container\",\"manufacturer\":\"Blueriiot\"}},\"state_topic\":\"sensor_pool/orp\",\"unit_of_measurement\":\"mV\",\"availability_topic\":\"{0}/status\"}}", _strServiceName.ToLower(), _strServiceName, _strServiceDescription);
+                                MQTT.SendMessage($"homeassistant/sensor/blueriiot/sensor_pool_{index}_ph/config",
+                                        "{{\"name\":\"Pool pH\",\"unique_id\":\"{1}-1\",\"device\":{{\"identifiers\":[\"{1}\"],\"name\":\"{2}\",\"model\":\"Container\",\"manufacturer\":\"Blueriiot\"}},\"state_topic\":\"sensor_pool/{0}/ph\",\"suggested_display_precision\":\"1\",\"unit_of_measurement\":\"pH\",\"availability_topic\":\"{3}/status\"}}",
+                                        index, baseId, _strServiceDescription, _strServiceName.ToLower());
 
-			MQTT.SendMessage("homeassistant/sensor/blueriiot/sensor_pool_salinity/config",
-				"{{\"name\":\"Pool Salinity\",\"unique_id\":\"{1}-3\",\"device\":{{\"identifiers\":[\"{1}\"],\"name\":\"{2}\",\"model\":\"Container\",\"manufacturer\":\"Blueriiot\"}},\"state_topic\":\"sensor_pool/salinity\",\"unit_of_measurement\":\"ppm\",\"availability_topic\":\"{0}/status\"}}", _strServiceName.ToLower(), _strServiceName, _strServiceDescription);
+                                MQTT.SendMessage($"homeassistant/sensor/blueriiot/sensor_pool_{index}_orp/config",
+                                        "{{\"name\":\"Pool Orp\",\"unique_id\":\"{1}-2\",\"device\":{{\"identifiers\":[\"{1}\"],\"name\":\"{2}\",\"model\":\"Container\",\"manufacturer\":\"Blueriiot\"}},\"state_topic\":\"sensor_pool/{0}/orp\",\"unit_of_measurement\":\"mV\",\"availability_topic\":\"{3}/status\"}}",
+                                        index, baseId, _strServiceDescription, _strServiceName.ToLower());
 
-			MQTT.SendMessage("homeassistant/sensor/blueriiot/sensor_pool_conductivity/config",
-				"{{\"name\":\"Pool Conductivity\",\"unique_id\":\"{1}-4\",\"device\":{{\"identifiers\":[\"{1}\"],\"name\":\"{2}\",\"model\":\"Container\",\"manufacturer\":\"Blueriiot\"}},\"state_topic\":\"sensor_pool/conductivity\",\"unit_of_measurement\":\"μS\",\"availability_topic\":\"{0}/status\"}}", _strServiceName.ToLower(), _strServiceName, _strServiceDescription);
+                                MQTT.SendMessage($"homeassistant/sensor/blueriiot/sensor_pool_{index}_salinity/config",
+                                        "{{\"name\":\"Pool Salinity\",\"unique_id\":\"{1}-3\",\"device\":{{\"identifiers\":[\"{1}\"],\"name\":\"{2}\",\"model\":\"Container\",\"manufacturer\":\"Blueriiot\"}},\"state_topic\":\"sensor_pool/{0}/salinity\",\"unit_of_measurement\":\"ppm\",\"availability_topic\":\"{3}/status\"}}",
+                                        index, baseId, _strServiceDescription, _strServiceName.ToLower());
 
-		}
+                                MQTT.SendMessage($"homeassistant/sensor/blueriiot/sensor_pool_{index}_conductivity/config",
+                                        "{{\"name\":\"Pool Conductivity\",\"unique_id\":\"{1}-4\",\"device\":{{\"identifiers\":[\"{1}\"],\"name\":\"{2}\",\"model\":\"Container\",\"manufacturer\":\"Blueriiot\"}},\"state_topic\":\"sensor_pool/{0}/conductivity\",\"unit_of_measurement\":\"μS\",\"availability_topic\":\"{3}/status\"}}",
+                                        index, baseId, _strServiceDescription, _strServiceName.ToLower());
+
+                                MQTT.SendMessage($"homeassistant/sensor/blueriiot/sensor_pool_{index}_name/config",
+                                        "{{\"name\":\"Pool Name\",\"unique_id\":\"{1}-5\",\"device\":{{\"identifiers\":[\"{1}\"],\"name\":\"{2}\",\"model\":\"Container\",\"manufacturer\":\"Blueriiot\"}},\"state_topic\":\"sensor_pool/{0}/name\",\"availability_topic\":\"{3}/status\"}}",
+                                        index, baseId, _strServiceDescription, _strServiceName.ToLower());
+                        }
+
+                }
 
 		public static void Stop()
         {

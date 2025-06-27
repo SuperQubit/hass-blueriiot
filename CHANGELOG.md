@@ -1,6 +1,23 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [v2025.06.3] - 2025-06-29
+
+### Added
+- Support for polling multiple pools via `PoolIndex` list.
+- Published pool names via MQTT.
+
+### Changed
+- Configuration field `PoolIndex` is now a comma separated string.
+
+## [v2025.06.2] - 2025-06-28
+
+### Added
+- Optional `DeviceId` configuration allowing MQTT device identifier override.
+
+### Changed
+- MQTT discovery uses `blueriiot-{DeviceId}` for device identifiers.
+
 ## [v2025.06.1] - 2025-06-27
 
 ### Added

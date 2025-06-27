@@ -1,6 +1,6 @@
 {
   "name": "Blueriiot Blue Connect",
-  "version": "2025.6.1",
+  "version": "2025.6.3",
   "slug": "hass-blueriiot",
   "description": "An add-on for Blueriiot Blue Connect pool sensors.",
   "url": "https://github.com/SuperQubit/hass-blueriiot",
@@ -22,7 +22,8 @@
     "MQTTPassword": "",
     "MQTTBroker": "core-mosquitto",
     "MQTTTLS": false,
-    "PoolIndex": 0
+    "PoolIndex": "0",
+    "DeviceId": ""
   },
   "schema": {
     "BlueriiotUser": "str",
@@ -31,6 +32,7 @@
     "MQTTPassword": "str?",
     "MQTTBroker": "str",
     "MQTTTLS": "bool?",
-    "PoolIndex": "int?"
+    "PoolIndex": "str?",
+    "DeviceId": "str?"
   }
 }

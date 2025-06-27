@@ -42,9 +42,8 @@ namespace HMX.HASSBlueriiot
 
             Logging.WriteLog("BlueRiiot.Run() [0x{0}]", lRequestId.ToString("X8"));
 
-        }
-    }
-}
+    
+
             try
             {
                 bluePools = await _blueClient.GetSwimmingPools();
